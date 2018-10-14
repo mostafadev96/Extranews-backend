@@ -106,8 +106,17 @@ class PostController extends ApiController
         return array('image' => 'No');
     }
     public function getPost($id){
-        $top = Post::find($id)->with(['album','video','user','album.photos']);
-        return $top;
-    }
+        $top = Post::where('id','=',$id)->with(['album','video','user','album.photos']);
+        // MUST NOT USE FIND WITH WITH BECAUSE FIND GET ONLY SINGLE ENTRY
 
+        if($top){
+            return array(['found' => true,'post' => $top]);
+        }
+        return array(['found' => false,'post' => []]);
+    }
+    public function searchPost(Request $request){
+        $value=$request->name;
+        $portion = Post::where('title','LIKE',"%{$value}%")->with(['album','album.photos'])->paginate(10,['*'],'page');
+        return $portion;
+    }
 }
